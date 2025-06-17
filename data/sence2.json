@@ -1,0 +1,23 @@
+[
+    {
+        "name": "Sensor",
+        "powerConsumption": 10.0,
+        "priorityLevel": 1,
+        "type": "Sensor"
+    },
+    {
+        "lightness": 50.0,
+        "name": "Light",
+        "powerConsumption": 10.0,
+        "priorityLevel": 2,
+        "type": "Light"
+    },
+    {
+        "name": "Air Conditioner",
+        "powerConsumption": 100.0,
+        "priorityLevel": 3,
+        "speed": 10.0,
+        "targetTemperature": 25.0,
+        "type": "AirConditioner"
+    }
+]
