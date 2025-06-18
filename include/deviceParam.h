@@ -3,7 +3,7 @@
 #include "json.hpp"
 #include <string>
 
-using json = nlohmann::json;
+using json = nlohmann::ordered_json;
 
 enum class DeviceType { Sensor, Light, AirConditioner };
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "deviceParam.h"
-#include <vector>
 #include <iostream>
+#include <vector>
 
 class Device {
   protected:
@@ -52,19 +52,22 @@ template <typename T> class DeviceContainer {
     T **devices;
     int size;
     int capacity;
-    DeviceFactory* factory;
+    DeviceFactory *factory;
 
     void expand();
 
   public:
-    DeviceContainer(DeviceFactory* factory);  // Constructor
-    ~DeviceContainer(); // Destructor
+    DeviceContainer(DeviceFactory *factory); // Constructor
+    ~DeviceContainer();                      // Destructor
 
     void addDevice();
     void addDevice(T *Device);
-    void addDevice(json& params);
-    void addDevice(DeviceParam& params);
-    T *getDevice(int id);
+    void addDevice(json &params);
+    void addDevice(DeviceParam &params);
+    bool findDevice(int id);
+    bool removeDevice(int id);
+    Device* getDevice(int id);
+
     int getSize() const;
 
     std::vector<DeviceParam> getDeviceParams() const;
@@ -74,7 +77,8 @@ template <typename T> class DeviceContainer {
 
 // Constructor initializes the devices array and sets the size and capacity
 template <typename T>
-DeviceContainer<T>::DeviceContainer(DeviceFactory* factory) : size(0), capacity(2), factory(factory) {
+DeviceContainer<T>::DeviceContainer(DeviceFactory *factory)
+    : size(0), capacity(2), factory(factory) {
     devices = new T *[capacity];
 }
 
@@ -119,7 +123,7 @@ template <typename T> void DeviceContainer<T>::addDevice(T *Device) {
     devices[size++] = Device;
 }
 
-template <typename T> void DeviceContainer<T>::addDevice(json& params) {
+template <typename T> void DeviceContainer<T>::addDevice(json &params) {
     if (!params.is_array()) {
         std::cerr << "JSON is not an array\n";
         return;
@@ -136,7 +140,7 @@ template <typename T> void DeviceContainer<T>::addDevice(json& params) {
     }
 }
 
-template <typename T> void DeviceContainer<T>::addDevice(DeviceParam& params) {
+template <typename T> void DeviceContainer<T>::addDevice(DeviceParam &params) {
     T *device = static_cast<T *>(factory->createDevice(params));
     if (device) {
         addDevice(device);
@@ -145,12 +149,46 @@ template <typename T> void DeviceContainer<T>::addDevice(DeviceParam& params) {
     }
 }
 
-// Gets a device by index
-template <typename T> T *DeviceContainer<T>::getDevice(int index) {
-    if (index < 0 || index >= size) {
-        return nullptr;
+// Gets a device by id
+template <typename T> bool DeviceContainer<T>::findDevice(int id) {
+    for (int i = 0; i < size; ++i) {
+        if (devices[i]->getId() == id) {
+            std::cout << "Found device with id " << id << "\n";
+            json j = *devices[i];
+            std::cout << j.dump(4) << "\n";
+            return true;
+        }
     }
-    return devices[index];
+
+    return false;
+}
+
+template <typename T> bool DeviceContainer<T>::removeDevice(int id) {
+    for (int i = 0; i < size; ++i) {
+        if (devices[i]->getId() == id) {
+            std::cout << "Removed device with id " << id << "\n";
+            json j = *devices[i];
+            std::cout << j.dump(4) << "\n";
+            delete devices[i];
+            for (int j = i; j < size - 1; ++j) {
+                devices[j] = devices[j + 1];
+            }
+            --size;
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+// Gets a device by id
+template <typename T> Device *DeviceContainer<T>::getDevice(int id) {
+    for (int i = 0; i < size; ++i) {
+        if (devices[i]->getId() == id) {
+            return devices[i];
+        }
+    }
+    return nullptr;
 }
 
 // Returns the current number of devices in the container
@@ -165,6 +203,6 @@ template <typename T> json DeviceContainer<T>::toJson() const {
 }
 
 template <typename T>
-void to_json(nlohmann::json &j, const DeviceContainer<T> &container) {
+void to_json(nlohmann::ordered_json &j, const DeviceContainer<T> &container) {
     j = container.toJson();
 }

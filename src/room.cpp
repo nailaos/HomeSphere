@@ -2,8 +2,6 @@
 #include <fstream>
 #include <vector>
 
-using json = nlohmann::json;
-
 void Room::init() {
     DeviceFactory *light_factory = new LightFactory();
     DeviceFactory *air_conditioner_factory = new AirConditionerFactory();
@@ -91,9 +89,26 @@ void Room::showDevices() {
     std::cout << j.dump(4) << std::endl;
 }
 
-void Room::findDevice() { std::cout << "Find device\n"; }
+void Room::findDevice() {
+    std::cout << "Find device\n";
+    std::cout << "请输入设备ID: \n";
+    int id;
+    std::cin >> id;
+    bool found = sensors->findDevice(id) || lights->findDevice(id) || airConditioners->findDevice(id);
 
-void Room::removeDevice() { std::cout << "Remove device\n"; }
+    if (!found)
+        std::cout << "未找到设备" << std::endl;
+}
+
+void Room::removeDevice() { std::cout << "Remove device\n"; 
+    std::cout << "请输入设备ID: \n";
+    int id;
+    std::cin >> id;
+    bool found = sensors->removeDevice(id) || lights->removeDevice(id) || airConditioners->removeDevice(id);
+
+    if (!found)
+        std::cout << "未找到设备" << std::endl;
+}
 
 void Room::saveDevices() {
     std::cout << "Save devices\n";
