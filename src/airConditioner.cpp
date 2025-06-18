@@ -19,15 +19,13 @@ DeviceType AirConditioner::getDeviceType() const {
 
 void AirConditioner::update() { return; }
 
-DeviceParam AirConditioner::getDeviceParam() const {
-    DeviceParam param;
-    param.type = DeviceType::AirConditioner;
-    param.name = "Air Conditioner";
-    param.priorityLevel = priorityLevel;
-    param.powerConsumption = powerConsumption;
-    param.targetTemperature = targetTemperature;
-    param.speed = speed;
-    return param;
+json AirConditioner::toJson() const {
+    return {{"id", id},
+            {"name", name},
+            {"priorityLevel", priorityLevel},
+            {"powerConsumption", powerConsumption},
+            {"targetTemperature", targetTemperature},
+            {"speed", speed}};
 }
 
 Device *AirConditionerFactory::createDevice() {
@@ -36,29 +34,27 @@ Device *AirConditionerFactory::createDevice() {
     return air_conditioner;
 }
 
-Device *AirConditionerFactory::createDevice(DeviceParam &param) {
-    AirConditioner *air_conditioner = new AirConditioner(
-        param.name, param.priorityLevel, param.powerConsumption,
-        param.targetTemperature, param.speed);
-    return air_conditioner;
+Device *AirConditionerFactory::createDevice(const json &param) {
+    if (!param.contains("name") || !param.contains("priorityLevel") ||
+        !param.contains("powerConsumption") ||
+        !param.contains("targetTemperature") || !param.contains("speed")) {
+        std::cerr << "Invalid AirConditioner config: " << param.dump()
+                  << std::endl;
+        return nullptr;
+    }
+
+    std::string name = param["name"];
+    int priorityLevel = param["priorityLevel"];
+    double powerConsumption = param["powerConsumption"];
+    double targetTemperature = param["targetTemperature"];
+    double speed = param["speed"];
+
+    return new AirConditioner(name, priorityLevel, powerConsumption,
+                              targetTemperature, speed);
 }
 
-void AirConditionerContainer::displayInfo() {
-    std::cout << "Air Conditioner Container Info" << std::endl;
-    std::cout << "=====================\n";
-    std::cout << "Number of air conditioners: " << size << std::endl;
-    for (int i = 0; i < size; i++) {
-        std::cout << "Light " << i << ":\n";
-        std::cout << "ID: " << devices[i]->getId() << std::endl;
-        std::cout << "Name: " << devices[i]->getName() << std::endl;
-        std::cout << "Priority Level: " << devices[i]->getPriorityLevel()
-                  << std::endl;
-        std::cout << "Power Consumption: " << devices[i]->getPowerConsumption()
-                  << std::endl;
-        std::cout << "Target Temperature: "
-                  << devices[i]->getTargetTemperature() << std::endl;
-        std::cout << "Speed: " << devices[i]->getSpeed() << std::endl;
-    }
-    std::cout << "=====================\n";
-    return;
+Device *AirConditionerFactory::createDevice(DeviceParam &param) {
+    return new AirConditioner(param.name, param.priorityLevel,
+                              param.powerConsumption, param.targetTemperature,
+                              param.speed);
 }

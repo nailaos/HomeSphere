@@ -1,23 +1,32 @@
-[
-    {
-        "name": "Sensor",
-        "powerConsumption": 10.0,
-        "priorityLevel": 1,
-        "type": "Sensor"
-    },
-    {
-        "lightness": 50.0,
-        "name": "Light",
-        "powerConsumption": 10.0,
-        "priorityLevel": 2,
-        "type": "Light"
-    },
-    {
-        "name": "Air Conditioner",
-        "powerConsumption": 100.0,
-        "priorityLevel": 3,
-        "speed": 10.0,
-        "targetTemperature": 25.0,
-        "type": "AirConditioner"
-    }
-]
+{
+    "AirConditioners": [
+        {
+            "id": 2,
+            "name": "AirConditioner",
+            "powerConsumption": 100.0,
+            "priorityLevel": 3,
+            "speed": 10.0,
+            "targetTemperature": 25.0
+        }
+    ],
+    "Lights": [
+        {
+            "id": 1,
+            "lightness": 50.0,
+            "name": "Light",
+            "powerConsumption": 10.0,
+            "priorityLevel": 2
+        }
+    ],
+    "Sensors": [
+        {
+            "CO2_Concentration": -1.0,
+            "humidity": -1.0,
+            "id": 0,
+            "name": "Sensor",
+            "powerConsumption": 10.0,
+            "priorityLevel": 1,
+            "temperature": -1.0
+        }
+    ]
+}

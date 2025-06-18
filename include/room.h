@@ -1,21 +1,17 @@
 #pragma once
 
+#include "airConditioner.h"
 #include "light.h"
 #include "sensor.h"
-#include "airConditioner.h"
 #include <iostream>
 
 class Room {
-private:
-    LightContainer lights;
-    SensorContainer sensors;
-    AirConditionerContainer airConditioners;
+  private:
+    LightContainer *lights;
+    SensorContainer *sensors;
+    AirConditionerContainer *airConditioners;
 
-    LightFactory lightFactory;
-    SensorFactory sensorFactory;
-    AirConditionerFactory airConditionerFactory;
-
-public:
+  public:
     Room() {};
     ~Room() {};
 

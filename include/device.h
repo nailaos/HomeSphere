@@ -2,6 +2,7 @@
 
 #include "deviceParam.h"
 #include <vector>
+#include <iostream>
 
 class Device {
   protected:
@@ -32,7 +33,8 @@ class Device {
 
     virtual DeviceType getDeviceType() const = 0;
     virtual void update() = 0;
-    virtual DeviceParam getDeviceParam() const = 0;
+
+    virtual json toJson() const = 0;
 };
 
 class DeviceFactory {
@@ -41,6 +43,7 @@ class DeviceFactory {
     ~DeviceFactory() = default;
 
     virtual Device *createDevice() = 0;
+    virtual Device *createDevice(const json &param) = 0;
     virtual Device *createDevice(DeviceParam &params) = 0;
 };
 
@@ -49,24 +52,29 @@ template <typename T> class DeviceContainer {
     T **devices;
     int size;
     int capacity;
+    DeviceFactory* factory;
 
     void expand();
 
   public:
-    DeviceContainer();  // Constructor
+    DeviceContainer(DeviceFactory* factory);  // Constructor
     ~DeviceContainer(); // Destructor
 
+    void addDevice();
     void addDevice(T *Device);
+    void addDevice(json& params);
+    void addDevice(DeviceParam& params);
     T *getDevice(int id);
     int getSize() const;
-    virtual void displayInfo() = 0;
 
     std::vector<DeviceParam> getDeviceParams() const;
+
+    json toJson() const;
 };
 
 // Constructor initializes the devices array and sets the size and capacity
 template <typename T>
-DeviceContainer<T>::DeviceContainer() : size(0), capacity(2) {
+DeviceContainer<T>::DeviceContainer(DeviceFactory* factory) : size(0), capacity(2), factory(factory) {
     devices = new T *[capacity];
 }
 
@@ -76,6 +84,9 @@ template <typename T> DeviceContainer<T>::~DeviceContainer() {
         delete devices[i];
     }
     delete[] devices;
+    devices = nullptr;
+    delete factory;
+    factory = nullptr;
 }
 
 // Expands the device array by doubling the capacity
@@ -92,12 +103,46 @@ template <typename T> void DeviceContainer<T>::expand() {
     devices = newDevices;
 }
 
+// Adds a default device
+template <typename T> void DeviceContainer<T>::addDevice() {
+    if (size == capacity) {
+        expand();
+    }
+    devices[size++] = factory->createDevice();
+}
+
 // Adds a new device to the container
 template <typename T> void DeviceContainer<T>::addDevice(T *Device) {
     if (size == capacity) {
         expand(); // If the array is full, expand its size
     }
     devices[size++] = Device;
+}
+
+template <typename T> void DeviceContainer<T>::addDevice(json& params) {
+    if (!params.is_array()) {
+        std::cerr << "JSON is not an array\n";
+        return;
+    }
+
+    for (const auto &item : params) {
+        T *device = static_cast<T *>(factory->createDevice(item));
+        if (device) {
+            addDevice(device);
+        } else {
+            std::cerr << "Failed to create device from item: " << item.dump()
+                      << "\n";
+        }
+    }
+}
+
+template <typename T> void DeviceContainer<T>::addDevice(DeviceParam& params) {
+    T *device = static_cast<T *>(factory->createDevice(params));
+    if (device) {
+        addDevice(device);
+    } else {
+        std::cerr << "Failed to create device from params: \n";
+    }
 }
 
 // Gets a device by index
@@ -111,18 +156,15 @@ template <typename T> T *DeviceContainer<T>::getDevice(int index) {
 // Returns the current number of devices in the container
 template <typename T> int DeviceContainer<T>::getSize() const { return size; }
 
-// Displays the information of all devices in the container
-template <typename T> void DeviceContainer<T>::displayInfo() {
+template <typename T> json DeviceContainer<T>::toJson() const {
+    json j = json::array();
     for (int i = 0; i < size; ++i) {
-        devices[i]->displayInfo();
+        j.push_back(*(devices[i])); // 自动调用 T 的 to_json
     }
+    return j;
 }
 
 template <typename T>
-std::vector<DeviceParam> DeviceContainer<T>::getDeviceParams() const {
-    std::vector<DeviceParam> params;
-    for (int i = 0; i < size; ++i) {
-        params.push_back(devices[i]->getDeviceParam());
-    }
-    return params;
+void to_json(nlohmann::json &j, const DeviceContainer<T> &container) {
+    j = container.toJson();
 }

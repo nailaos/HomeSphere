@@ -21,16 +21,21 @@ class AirConditioner : public Device {
 
     DeviceType getDeviceType() const override;
     void update() override;
-    DeviceParam getDeviceParam() const override;
+
+    json toJson() const override;
 };
 
 class AirConditionerFactory : public DeviceFactory {
   public:
     Device *createDevice() override;
-    Device *createDevice(DeviceParam &param) override;
+    Device *createDevice(const json &param) override;
+    Device *createDevice(DeviceParam &params) override;
 };
 
 class AirConditionerContainer : public DeviceContainer<AirConditioner> {
   public:
-    void displayInfo() override;
+    AirConditionerContainer(DeviceFactory *factory)
+        : DeviceContainer<AirConditioner>(factory) {}
 };
+
+inline void to_json(json &j, const AirConditioner &ac) { j = ac.toJson(); }

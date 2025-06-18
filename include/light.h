@@ -16,16 +16,20 @@ class Light : public Device {
 
     DeviceType getDeviceType() const override;
     void update() override;
-    DeviceParam getDeviceParam() const override;
+
+    json toJson() const override;
 };
 
 class LightFactory : public DeviceFactory {
   public:
     Device *createDevice() override;
-    Device *createDevice(DeviceParam &param) override;
+    Device *createDevice(const json &param) override;
+    Device *createDevice(DeviceParam &params) override;
 };
 
 class LightContainer : public DeviceContainer<Light> {
   public:
-    void displayInfo() override;
+    LightContainer(DeviceFactory *factory) : DeviceContainer<Light>(factory) {}
 };
+
+inline void to_json(json &j, const Light &l) { j = l.toJson(); }

@@ -4,7 +4,15 @@
 
 using json = nlohmann::json;
 
-void Room::init() { return; }
+void Room::init() {
+    DeviceFactory *light_factory = new LightFactory();
+    DeviceFactory *air_conditioner_factory = new AirConditionerFactory();
+    DeviceFactory *sensor_factory = new SensorFactory();
+
+    lights = new LightContainer(light_factory);
+    airConditioners = new AirConditionerContainer(air_conditioner_factory);
+    sensors = new SensorContainer(sensor_factory);
+}
 
 void Room::printCurrentUser() {
     std::cout << "Current user: \n";
@@ -20,32 +28,18 @@ void Room::addDevicesFromFile() {
     std::string json_path = "../data/" + filename + ".json";
 
     std::ifstream ifs(json_path);
+    if (!ifs.is_open()) {
+        std::cerr << "无法打开文件: " << json_path << std::endl;
+        return;
+    }
+
     json j;
     ifs >> j;
-    std::vector<DeviceParam> device_params = j.get<std::vector<DeviceParam>>();
-    for (auto device_param : device_params) {
-        switch (device_param.type) {
-        case DeviceType::Sensor: {
-            Device *sensor = sensorFactory.createDevice(device_param);
-            sensors.addDevice(static_cast<Sensor *>(sensor));
-            break;
-        }
-        case DeviceType::Light: {
-            Device *light = lightFactory.createDevice(device_param);
-            lights.addDevice(static_cast<Light *>(light));
-            break;
-        }
-        case DeviceType::AirConditioner: {
-            Device *air_conditioner =
-                airConditionerFactory.createDevice(device_param);
-            airConditioners.addDevice(
-                static_cast<AirConditioner *>(air_conditioner));
-            break;
-        }
-        default:
-            break;
-        }
-    }
+    ifs.close();
+
+    sensors->addDevice(j["Sensors"]);
+    lights->addDevice(j["Lights"]);
+    airConditioners->addDevice(j["AirConditioners"]);
 }
 
 void Room::addDevices() {
@@ -70,8 +64,7 @@ void Room::addDevices() {
         case DeviceType::Light: {
             std::cout << "请输入灯光亮度: \n";
             std::cin >> device_param.lightness;
-            Device *light = lightFactory.createDevice(device_param);
-            lights.addDevice(static_cast<Light *>(light));
+            lights->addDevice(device_param);
             break;
         }
         case DeviceType::AirConditioner: {
@@ -79,15 +72,11 @@ void Room::addDevices() {
             std::cin >> device_param.targetTemperature;
             std::cout << "请输入空调速度: \n";
             std::cin >> device_param.speed;
-            Device *air_conditioner =
-                airConditionerFactory.createDevice(device_param);
-            airConditioners.addDevice(
-                static_cast<AirConditioner *>(air_conditioner));
+            airConditioners->addDevice(device_param);
             break;
         }
         default: {
-            Device *sensor = sensorFactory.createDevice(device_param);
-            sensors.addDevice(static_cast<Sensor *>(sensor));
+            sensors->addDevice(device_param);
             break;
         }
         }
@@ -96,9 +85,10 @@ void Room::addDevices() {
 
 void Room::showDevices() {
     std::cout << "Show devices\n";
-    sensors.displayInfo();
-    lights.displayInfo();
-    airConditioners.displayInfo();
+    json j = {{"Sensors", *sensors},
+              {"Lights", *lights},
+              {"AirConditioners", *airConditioners}};
+    std::cout << j.dump(4) << std::endl;
 }
 
 void Room::findDevice() { std::cout << "Find device\n"; }
@@ -110,23 +100,13 @@ void Room::saveDevices() {
     std::cout << "请输入想要保存的文件名称(无后缀): \n";
     std::string filename;
     std::cin >> filename;
-    std::vector<DeviceParam> device_params;
-    std::vector<DeviceParam> sensors_params = sensors.getDeviceParams();
-    device_params.insert(device_params.end(), sensors_params.begin(),
-                         sensors_params.end());
-
-    std::vector<DeviceParam> lights_params = lights.getDeviceParams();
-    device_params.insert(device_params.end(), lights_params.begin(),
-                         lights_params.end());
-
-    std::vector<DeviceParam> air_conditioners_params =
-        airConditioners.getDeviceParams();
-    device_params.insert(device_params.end(), air_conditioners_params.begin(),
-                         air_conditioners_params.end());
 
     std::string json_path = "../data/" + filename + ".json";
 
-    json j = device_params;
+    json j = {{"Sensors", *sensors},
+              {"Lights", *lights},
+              {"AirConditioners", *airConditioners}};
+
     std::ofstream ofs(json_path);
     ofs << j.dump(4);
     ofs.close();

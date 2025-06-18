@@ -11,44 +11,40 @@ DeviceType Sensor::getDeviceType() const { return DeviceType::Sensor; }
 
 void Sensor::update() { return; }
 
-DeviceParam Sensor::getDeviceParam() const {
-    DeviceParam param;
-    param.type = DeviceType::Sensor;
-    param.name = name;
-    param.priorityLevel = priorityLevel;
-    param.powerConsumption = powerConsumption;
-    return param;
+json Sensor::toJson() const {
+    return {{"id", id},
+            {"name", name},
+            {"priorityLevel", priorityLevel},
+            {"powerConsumption", powerConsumption},
+            {"temperature", temperature},
+            {"humidity", humidity},
+            {"CO2_Concentration", CO2_Concentration}};
 }
 
-Device *SensorFactory::createDevice() {
+    Device *SensorFactory::createDevice() {
     Sensor *sensor = new Sensor("Sensor", 0, 2.0);
     return sensor;
 }
 
-Device *SensorFactory::createDevice(DeviceParam &param) {
-    Sensor *sensor =
-        new Sensor(param.name, param.priorityLevel, param.powerConsumption);
-    return sensor;
+Device *SensorFactory::createDevice(const json &param) {
+    if (!param.contains("name") || !param.contains("priorityLevel") ||
+        !param.contains("powerConsumption") || !param.contains("temperature") ||
+        !param.contains("humidity") || !param.contains("CO2_Concentration")) {
+        std::cerr << "Invalid Sensor config: " << param.dump() << std::endl;
+        return nullptr;
+    }
+
+    std::string name = param["name"];
+    int priorityLevel = param["priorityLevel"];
+    double powerConsumption = param["powerConsumption"];
+    double temperature = param["temperature"];
+    double humidity = param["humidity"];
+    double co2 = param["CO2_Concentration"];
+
+    return new Sensor(name, priorityLevel, powerConsumption, temperature,
+                      humidity, co2);
 }
 
-void SensorContainer::displayInfo() {
-    std::cout << "Sensor Container Info" << std::endl;
-    std::cout << "=====================\n";
-    std::cout << "Number of sensors: " << size << std::endl;
-    for (int i = 0; i < size; i++) {
-        std::cout << "Sensor " << i << ":\n";
-        std::cout << "ID: " << devices[i]->getId() << std::endl;
-        std::cout << "Name: " << devices[i]->getName() << std::endl;
-        std::cout << "Priority Level: " << devices[i]->getPriorityLevel()
-                  << std::endl;
-        std::cout << "Power Consumption: " << devices[i]->getPowerConsumption()
-                  << std::endl;
-        std::cout << "Temperature: " << devices[i]->getTemperature()
-                  << std::endl;
-        std::cout << "Humidity: " << devices[i]->getHumidity() << std::endl;
-        std::cout << "CO2 Concentration: " << devices[i]->getCO2_Concentration()
-                  << std::endl;
-    }
-    std::cout << "=====================\n";
-    return;
+Device *SensorFactory::createDevice(DeviceParam &param) {
+    return new Sensor(param.name, param.priorityLevel, param.powerConsumption);
 }

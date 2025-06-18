@@ -9,14 +9,12 @@ DeviceType Light::getDeviceType() const { return DeviceType::Light; }
 
 void Light::update() { return; }
 
-DeviceParam Light::getDeviceParam() const {
-    DeviceParam param;
-    param.type = DeviceType::Light;
-    param.name = name;
-    param.priorityLevel = priorityLevel;
-    param.powerConsumption = powerConsumption;
-    param.lightness = lightness;
-    return param;
+json Light::toJson() const {
+    return {{"id", id},
+            {"name", name},
+            {"priorityLevel", priorityLevel},
+            {"powerConsumption", powerConsumption},
+            {"lightness", lightness}};
 }
 
 Device *LightFactory::createDevice() {
@@ -24,26 +22,21 @@ Device *LightFactory::createDevice() {
     return light;
 }
 
-Device *LightFactory::createDevice(DeviceParam &param) {
-    Light *light = new Light(param.name, param.priorityLevel,
-                             param.powerConsumption, param.lightness);
-    return light;
+Device *LightFactory::createDevice(const json &param) {
+    if (!param.contains("name") || !param.contains("priorityLevel") ||
+        !param.contains("powerConsumption") || !param.contains("lightness")) {
+        std::cerr << "Invalid Light config: " << param.dump() << std::endl;
+        return nullptr;
+    }
+
+    std::string name = param["name"];
+    int priorityLevel = param["priorityLevel"];
+    double powerConsumption = param["powerConsumption"];
+    double lightness = param["lightness"];
+
+    return new Light(name, priorityLevel, powerConsumption, lightness);
 }
 
-void LightContainer::displayInfo() {
-    std::cout << "Light Container Info" << std::endl;
-    std::cout << "=====================\n";
-    std::cout << "Number of lights: " << size << std::endl;
-    for (int i = 0; i < size; i++) {
-        std::cout << "Light " << i << ":\n";
-        std::cout << "ID: " << devices[i]->getId() << std::endl;
-        std::cout << "Name: " << devices[i]->getName() << std::endl;
-        std::cout << "Priority Level: " << devices[i]->getPriorityLevel()
-                  << std::endl;
-        std::cout << "Power Consumption: " << devices[i]->getPowerConsumption()
-                  << std::endl;
-        std::cout << "Lightness: " << devices[i]->getLightness() << std::endl;
-    }
-    std::cout << "=====================\n";
-    return;
+Device* LightFactory::createDevice(DeviceParam &param) {
+    return new Light(param.name, param.priorityLevel, param.powerConsumption, param.lightness);
 }
