@@ -35,13 +35,11 @@ Device *AirConditionerFactory::createDevice() {
 }
 
 Device *AirConditionerFactory::createDevice(const json &param) {
-    if (!param.contains("name") || !param.contains("priorityLevel") ||
-        !param.contains("powerConsumption") ||
-        !param.contains("targetTemperature") || !param.contains("speed")) {
-        std::cerr << "Invalid AirConditioner config: " << param.dump()
-                  << std::endl;
-        return nullptr;
-    }
+    // check common parameters
+    check(param);
+
+    // check specific parameters
+    // TODO: 查看device.cpp和light.cpp以提供帮助
 
     std::string name = param["name"];
     int priorityLevel = param["priorityLevel"];
@@ -54,7 +52,6 @@ Device *AirConditionerFactory::createDevice(const json &param) {
 }
 
 Device *AirConditionerFactory::createDevice(DeviceParam &param) {
-    return new AirConditioner(param.name, param.priorityLevel,
-                              param.powerConsumption, param.targetTemperature,
-                              param.speed);
+    json j = param;
+    return createDevice(j);
 }

@@ -27,12 +27,11 @@ json Sensor::toJson() const {
 }
 
 Device *SensorFactory::createDevice(const json &param) {
-    if (!param.contains("name") || !param.contains("priorityLevel") ||
-        !param.contains("powerConsumption") || !param.contains("temperature") ||
-        !param.contains("humidity") || !param.contains("CO2_Concentration")) {
-        std::cerr << "Invalid Sensor config: " << param.dump() << std::endl;
-        return nullptr;
-    }
+    // check common parameters
+    check(param);
+
+    // check specific parameters
+    // TODO: 查看device.cpp和light.cpp以提供帮助
 
     std::string name = param["name"];
     int priorityLevel = param["priorityLevel"];
@@ -46,5 +45,6 @@ Device *SensorFactory::createDevice(const json &param) {
 }
 
 Device *SensorFactory::createDevice(DeviceParam &param) {
-    return new Sensor(param.name, param.priorityLevel, param.powerConsumption);
+    json j = param;
+    return createDevice(j);
 }

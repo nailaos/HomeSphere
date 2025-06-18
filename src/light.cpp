@@ -1,4 +1,6 @@
 #include "light.h"
+#include "exception.h"
+#include "common.h"
 #include <iostream>
 
 double Light::getLightness() const { return lightness; }
@@ -23,10 +25,23 @@ Device *LightFactory::createDevice() {
 }
 
 Device *LightFactory::createDevice(const json &param) {
-    if (!param.contains("name") || !param.contains("priorityLevel") ||
-        !param.contains("powerConsumption") || !param.contains("lightness")) {
-        std::cerr << "Invalid Light config: " << param.dump() << std::endl;
-        return nullptr;
+
+    // check common parameters
+    check(param);
+
+    // check light specific parameters
+    if (!param.contains("lightness")) {
+        throw InvalidParameterException(param, "Missing required field: lightness");
+    }
+
+    if (!param["lightness"].is_number()) {
+        throw InvalidParameterException(param,
+                                        "'lightness' must be a number");
+    }
+
+    if (param["lightness"].get<double>() < 0 || param["lightness"].get<double>() > MAX_LIGHTNESS) {
+        throw InvalidParameterException(param,
+                                        "'lightness' must be between 0 and " + std::to_string(MAX_LIGHTNESS));
     }
 
     std::string name = param["name"];
@@ -38,5 +53,6 @@ Device *LightFactory::createDevice(const json &param) {
 }
 
 Device* LightFactory::createDevice(DeviceParam &param) {
-    return new Light(param.name, param.priorityLevel, param.powerConsumption, param.lightness);
+    json j = param;
+    return createDevice(j);
 }

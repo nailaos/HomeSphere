@@ -1,6 +1,7 @@
 #pragma once
 
 #include "deviceParam.h"
+#include "exception.h"
 #include <iostream>
 #include <vector>
 
@@ -41,6 +42,8 @@ class DeviceFactory {
   public:
     DeviceFactory() = default;
     ~DeviceFactory() = default;
+
+    bool check(const json &param) const;
 
     virtual Device *createDevice() = 0;
     virtual Device *createDevice(const json &param) = 0;
@@ -125,28 +128,18 @@ template <typename T> void DeviceContainer<T>::addDevice(T *Device) {
 
 template <typename T> void DeviceContainer<T>::addDevice(json &params) {
     if (!params.is_array()) {
-        std::cerr << "JSON is not an array\n";
-        return;
+        throw InvalidParameterException(params, "params must be an array in addDevice(json &params)");
     }
 
     for (const auto &item : params) {
         T *device = static_cast<T *>(factory->createDevice(item));
-        if (device) {
-            addDevice(device);
-        } else {
-            std::cerr << "Failed to create device from item: " << item.dump()
-                      << "\n";
-        }
+        addDevice(device);
     }
 }
 
 template <typename T> void DeviceContainer<T>::addDevice(DeviceParam &params) {
     T *device = static_cast<T *>(factory->createDevice(params));
-    if (device) {
-        addDevice(device);
-    } else {
-        std::cerr << "Failed to create device from params: \n";
-    }
+    addDevice(device);
 }
 
 // Gets a device by id
@@ -177,7 +170,7 @@ template <typename T> bool DeviceContainer<T>::removeDevice(int id) {
             return true;
         }
     }
-    
+
     return false;
 }
 
