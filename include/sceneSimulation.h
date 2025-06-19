@@ -95,4 +95,8 @@ private:
     int logIntervalMs;
     int simDurationMin;
     bool autoStop;
+
+    bool fireHandled;
+    bool gasLeakHandled;
+    bool highTempHandled;
 }; 

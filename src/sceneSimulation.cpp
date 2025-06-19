@@ -10,6 +10,7 @@
 SceneSimulation::SceneSimulation(Room *room)
     : room(room), running(false), emergencyMode(false), fireDetected(false),
       gasLeakDetected(false), highTempDetected(false),
+      fireHandled(false), gasLeakHandled(false), highTempHandled(false),
       gen(std::mt19937(
           std::chrono::system_clock::now().time_since_epoch().count())),
       logIntervalMs(5000), simDurationMin(60), autoStop(true) {
@@ -69,6 +70,7 @@ void SceneSimulation::start() {
     running = true;
     emergencyMode = false;
     fireDetected = gasLeakDetected = highTempDetected = false;
+    fireHandled = gasLeakHandled = highTempHandled = false;
     lastLogTime = std::chrono::steady_clock::now();
     LOG_INFO_SYS("场景模拟启动");
     envThread = std::thread(&SceneSimulation::environmentThreadFunc, this);
@@ -123,7 +125,7 @@ void SceneSimulation::environmentThreadFunc() {
             std::lock_guard<std::mutex> lock(envMutex);
             updateEnvironment();
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     }
 }
 
@@ -153,7 +155,7 @@ void SceneSimulation::sensorThreadFunc() {
                           "CO2传感器更新: " + std::to_string(c) + " ppm");
             }
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(300));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     }
 }
 
@@ -167,7 +169,7 @@ void SceneSimulation::lightThreadFunc() {
                               std::to_string(light->getLightness()) + "%");
             }
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(400));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     }
 }
 
@@ -182,7 +184,7 @@ void SceneSimulation::airConditionerThreadFunc() {
                               "°C, 速度: " + std::to_string(ac->getSpeed()));
             }
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     }
 }
 
@@ -191,14 +193,14 @@ void SceneSimulation::automationThreadFunc() {
         if (!emergencyMode.load()) {
             applyAutomationRules();
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(3000));
     }
 }
 
 void SceneSimulation::emergencyThreadFunc() {
     while (running.load()) {
         handleEmergencies();
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 }
 
@@ -232,7 +234,7 @@ void SceneSimulation::loggingThreadFunc() {
             LOG_INFO_SYS(oss.str());
             lastLogTime = now;
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     }
 }
 
@@ -396,7 +398,7 @@ void SceneSimulation::applyAutomationRules() {
 void SceneSimulation::applyEmergencyActions() {
     auto *lights = room->getLights();
     auto *acs = room->getAirConditioners();
-    if (fireDetected) {
+    if (fireDetected && !fireHandled) {
         for (auto &light : lights->getDevices()) {
             light->setLightness(0);
             LOG_ALERT(light->getId(), "火灾紧急-灯光断电");
@@ -406,7 +408,8 @@ void SceneSimulation::applyEmergencyActions() {
             LOG_ALERT(ac->getId(), "火灾紧急-空调断电");
         }
         logDeviceStates("火灾紧急处理后");
-    } else if (gasLeakDetected) {
+        fireHandled = true;
+    } else if (gasLeakDetected && !gasLeakHandled) {
         for (auto &light : lights->getDevices()) {
             light->setLightness(0);
             LOG_ALERT(light->getId(), "燃气泄漏-灯光断电");
@@ -416,7 +419,8 @@ void SceneSimulation::applyEmergencyActions() {
             LOG_ALERT(ac->getId(), "燃气泄漏-空调断电");
         }
         logDeviceStates("燃气泄漏紧急处理后");
-    } else if (highTempDetected) {
+        gasLeakHandled = true;
+    } else if (highTempDetected && !highTempHandled) {
         for (auto &light : lights->getDevices()) {
             light->setLightness(0);
             LOG_ALERT(light->getId(), "高温-灯光关闭降热");
@@ -427,6 +431,7 @@ void SceneSimulation::applyEmergencyActions() {
             LOG_ALERT(ac->getId(), "高温-空调全功率18°C");
         }
         logDeviceStates("高温紧急处理后");
+        highTempHandled = true;
     }
 }
 
