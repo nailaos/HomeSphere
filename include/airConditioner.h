@@ -9,8 +9,8 @@ class AirConditioner : public Device {
 
   public:
     AirConditioner(std::string name, int priorityLevel, double powerConsumption,
-                   double temperature, double speed)
-        : Device(name, priorityLevel, powerConsumption),
+                   double temperature, double speed, int updateFrequency = 1000)
+        : Device(name, priorityLevel, powerConsumption, updateFrequency),
           targetTemperature(temperature), speed(speed) {};
 
     double getTargetTemperature() const;
@@ -29,7 +29,6 @@ class AirConditionerFactory : public DeviceFactory {
   public:
     Device *createDevice() override;
     Device *createDevice(const json &param) override;
-    Device *createDevice(DeviceParam &params) override;
 };
 
 class AirConditionerContainer : public DeviceContainer<AirConditioner> {

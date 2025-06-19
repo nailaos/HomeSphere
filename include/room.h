@@ -23,7 +23,12 @@ class Room {
     void findDevice();
     void removeDevice();
     void saveDevices();
-    void sceneSimulation();
+    void roomSimulation();
+    
+    // 添加getter方法以便SceneSimulation访问
+    LightContainer* getLights() const { return lights; }
+    SensorContainer* getSensors() const { return sensors; }
+    AirConditionerContainer* getAirConditioners() const { return airConditioners; }
 };
 
 void menu();

@@ -1,9 +1,13 @@
 #include "room.h"
+#include "SmartLogger.h"
 #include "exception.h"
+#include "sceneSimulation.h"
 #include <fstream>
 #include <vector>
 
 void Room::init() {
+    LOG_INFO_SYS("开始初始化房间设备容器");
+    
     DeviceFactory *light_factory = new LightFactory();
     DeviceFactory *air_conditioner_factory = new AirConditionerFactory();
     DeviceFactory *sensor_factory = new SensorFactory();
@@ -11,20 +15,25 @@ void Room::init() {
     lights = new LightContainer(light_factory);
     airConditioners = new AirConditionerContainer(air_conditioner_factory);
     sensors = new SensorContainer(sensor_factory);
+    
+    LOG_INFO_SYS("房间设备容器初始化完成");
 }
 
 void Room::printCurrentUser() {
+    LOG_INFO_SYS("打印当前用户信息");
     std::cout << "Current user: \n";
     std::cout << "Admin\n";
 }
 
 void Room::addDevicesFromFile() {
+    LOG_INFO_SYS("开始从文件导入设备");
     std::cout << "Add devices from file\n";
     std::cout << "请输入文件名称(data文件夹里): \n";
     std::string filename;
     std::cin >> filename;
 
     std::string json_path = "../data/" + filename + ".json";
+    LOG_INFO_SYS("尝试加载设备配置文件: " + json_path);
 
     try {
         std::ifstream ifs(json_path);
@@ -32,27 +41,45 @@ void Room::addDevicesFromFile() {
         ifs >> j;
         ifs.close();
 
+        int sensorCount = j["Sensors"].size();
+        int lightCount = j["Lights"].size();
+        int acCount = j["AirConditioners"].size();
+        
         sensors->addDevice(j["Sensors"]);
         lights->addDevice(j["Lights"]);
         airConditioners->addDevice(j["AirConditioners"]);
+        
+        LOG_INFO_SYS("设备导入成功 - 传感器: " + std::to_string(sensorCount) + 
+                     ", 灯光: " + std::to_string(lightCount) + 
+                     ", 空调: " + std::to_string(acCount));
+        
     } catch (const FactoryNotFoundException &e) {
+        LOG_ALERT_SYS("工厂未找到异常: " + std::string(e.what()));
         std::cout << "工厂未找到异常: " << e.what() << std::endl;
     } catch (const InvalidParameterException &e) {
+        LOG_ALERT_SYS("无效参数异常: " + std::string(e.what()));
         std::cout << "无效参数异常: " << e.what() << std::endl;
     } catch (const nlohmann::json::parse_error &e) {
+        LOG_ALERT_SYS("JSON解析失败: " + std::string(e.what()));
         std::cout << "JSON解析失败: " << e.what() << std::endl;
     } catch (const nlohmann::json::out_of_range &e) {
+        LOG_ALERT_SYS("JSON字段缺失: " + std::string(e.what()));
         std::cout << "JSON字段缺失: " << e.what() << std::endl;
     } catch (const std::exception &e) {
+        LOG_ALERT_SYS("其他异常: " + std::string(e.what()));
         std::cout << "其他异常: " << e.what() << std::endl;
     }
 }
 
 void Room::addDevices() {
+    LOG_INFO_SYS("开始从键盘添加设备");
     std::cout << "Add devices\n";
     int n;
     std::cout << "请输入设备数量: \n";
     std::cin >> n;
+    
+    LOG_INFO_SYS("准备添加 " + std::to_string(n) + " 个设备");
+    
     try {
         for (int i = 0; i < n; i++) {
             DeviceParam device_param;
@@ -70,12 +97,14 @@ void Room::addDevices() {
             switch (device_param.type) {
             case DeviceType::Sensor: {
                 sensors->addDevice(device_param);
+                LOG_INFO_SYS("添加传感器设备: " + device_param.name);
                 break;
             }
             case DeviceType::Light: {
                 std::cout << "请输入灯光亮度: \n";
                 std::cin >> device_param.lightness;
                 lights->addDevice(device_param);
+                LOG_INFO_SYS("添加灯光设备: " + device_param.name);
                 break;
             }
             case DeviceType::AirConditioner: {
@@ -84,22 +113,28 @@ void Room::addDevices() {
                 std::cout << "请输入空调速度: \n";
                 std::cin >> device_param.speed;
                 airConditioners->addDevice(device_param);
+                LOG_INFO_SYS("添加空调设备: " + device_param.name);
                 break;
             }
             default:
                 throw FactoryNotFoundException();
             }
         }
+        LOG_INFO_SYS("设备添加完成");
     } catch (const FactoryNotFoundException &e) {
+        LOG_ALERT_SYS("Factory error: " + std::string(e.what()));
         std::cout << "Factory error: " << e.what() << std::endl;
     } catch (const InvalidParameterException &e) {
+        LOG_ALERT_SYS("Parameter error: " + std::string(e.what()));
         std::cout << "Parameter error: " << e.what() << std::endl;
     } catch (const std::exception &e) {
+        LOG_ALERT_SYS("Other error: " + std::string(e.what()));
         std::cout << "Other error: " << e.what() << std::endl;
     }
 }
 
 void Room::showDevices() {
+    LOG_INFO_SYS("显示所有设备信息");
     std::cout << "Show devices\n";
     json j = {{"Sensors", *sensors},
               {"Lights", *lights},
@@ -108,36 +143,54 @@ void Room::showDevices() {
 }
 
 void Room::findDevice() {
+    LOG_INFO_SYS("开始查找设备");
     std::cout << "Find device\n";
     std::cout << "请输入设备ID: \n";
     int id;
     std::cin >> id;
+    
+    LOG_INFO_SYS("查找设备ID: " + std::to_string(id));
+    
     bool found = sensors->findDevice(id) || lights->findDevice(id) ||
                  airConditioners->findDevice(id);
 
-    if (!found)
+    if (!found) {
+        LOG_INFO_SYS("未找到设备ID: " + std::to_string(id));
         std::cout << "未找到设备" << std::endl;
+    } else {
+        LOG_INFO_SYS("找到设备ID: " + std::to_string(id));
+    }
 }
 
 void Room::removeDevice() {
+    LOG_INFO_SYS("开始删除设备");
     std::cout << "Remove device\n";
     std::cout << "请输入设备ID: \n";
     int id;
     std::cin >> id;
+    
+    LOG_INFO_SYS("删除设备ID: " + std::to_string(id));
+    
     bool found = sensors->removeDevice(id) || lights->removeDevice(id) ||
                  airConditioners->removeDevice(id);
 
-    if (!found)
+    if (!found) {
+        LOG_INFO_SYS("未找到要删除的设备ID: " + std::to_string(id));
         std::cout << "未找到设备" << std::endl;
+    } else {
+        LOG_INFO_SYS("成功删除设备ID: " + std::to_string(id));
+    }
 }
 
 void Room::saveDevices() {
+    LOG_INFO_SYS("开始保存设备信息");
     std::cout << "Save devices\n";
     std::cout << "请输入想要保存的文件名称(无后缀): \n";
     std::string filename;
     std::cin >> filename;
 
     std::string json_path = "../data/" + filename + ".json";
+    LOG_INFO_SYS("保存设备信息到文件: " + json_path);
 
     json j = {{"Sensors", *sensors},
               {"Lights", *lights},
@@ -146,9 +199,42 @@ void Room::saveDevices() {
     std::ofstream ofs(json_path);
     ofs << j.dump(4);
     ofs.close();
+    
+    LOG_INFO_SYS("设备信息保存成功");
 }
 
-void Room::sceneSimulation() { std::cout << "Scene simulation\n"; }
+void Room::roomSimulation() { 
+    LOG_INFO_SYS("开始智能场景模拟");
+    std::cout << "Scene simulation\n";
+    
+    // 检查是否有设备
+    if (sensors->getSize() == 0 && lights->getSize() == 0 && airConditioners->getSize() == 0) {
+        LOG_ALERT_SYS("警告: 没有设备可以模拟");
+        std::cout << "警告: 没有设备可以模拟。请先添加一些设备。" << std::endl;
+        return;
+    }
+    
+    // 创建场景模拟对象
+    std::cout << "正在创建智能场景模拟对象..." << std::endl;
+    SceneSimulation *sceneSimulation = new SceneSimulation(this);
+    std::cout << "智能场景模拟对象创建成功" << std::endl;
+    
+    // 加载环境配置文件
+    sceneSimulation->loadEnvironmentConfig("../data/environment.json");
+    
+    std::cout << "开始智能场景模拟..." << std::endl;
+    std::cout << "模拟将使用多线程控制不同类型的设备" << std::endl;
+    std::cout << "环境参数将根据时间自动变化" << std::endl;
+    std::cout << "自动化规则和紧急事件处理已启用" << std::endl;
+    std::cout << "将自动触发预设的突发事件" << std::endl;
+    
+    // 启动场景模拟
+    sceneSimulation->start();
+    
+    // 等待场景模拟结束
+    LOG_INFO_SYS("场景模拟结束");
+    std::cout << "场景模拟已结束，返回主菜单..." << std::endl;
+}
 
 void menu() {
     std::cout << "=========主菜单=========" << std::endl;

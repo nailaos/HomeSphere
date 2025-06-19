@@ -13,11 +13,12 @@ class Device {
     int priorityLevel;
     double powerConsumption;
     bool state;
+    int updateFrequency; // 更新频率(毫秒)
 
   public:
-    Device(std::string name, int priorityLevel, double powerConsumption)
+    Device(std::string name, int priorityLevel, double powerConsumption, int updateFrequency = 1000)
         : id(nextId++), name(name), priorityLevel(priorityLevel),
-          powerConsumption(powerConsumption), state(false) {};
+          powerConsumption(powerConsumption), state(false), updateFrequency(updateFrequency) {};
 
     virtual ~Device() = default;
 
@@ -26,11 +27,13 @@ class Device {
     int getPriorityLevel() const;
     double getPowerConsumption() const;
     bool getState() const;
+    int getUpdateFrequency() const;
 
     void setName(const std::string &name);
     void setPriorityLevel(int priorityLevel);
     void setPowerConsumption(double powerConsumption);
     void setState(bool state);
+    void setUpdateFrequency(int frequency);
 
     virtual DeviceType getDeviceType() const = 0;
     virtual void update() = 0;
@@ -47,7 +50,6 @@ class DeviceFactory {
 
     virtual Device *createDevice() = 0;
     virtual Device *createDevice(const json &param) = 0;
-    virtual Device *createDevice(DeviceParam &params) = 0;
 };
 
 template <typename T> class DeviceContainer {
@@ -70,6 +72,7 @@ template <typename T> class DeviceContainer {
     bool findDevice(int id);
     bool removeDevice(int id);
     Device* getDevice(int id);
+    std::vector<T *> getDevices() const;
 
     int getSize() const;
 
@@ -198,4 +201,13 @@ template <typename T> json DeviceContainer<T>::toJson() const {
 template <typename T>
 void to_json(nlohmann::ordered_json &j, const DeviceContainer<T> &container) {
     j = container.toJson();
+}
+
+template <typename T>
+std::vector<T*> DeviceContainer<T>::getDevices() const {
+    std::vector<T*> result;
+    for (int i = 0; i < size; ++i) {
+        result.push_back(devices[i]);
+    }
+    return result;
 }

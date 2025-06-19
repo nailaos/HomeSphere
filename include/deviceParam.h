@@ -12,6 +12,7 @@ struct DeviceParam {
     std::string name;
     int priorityLevel;
     double powerConsumption;
+    int updateFrequency = 1000; // 更新频率(毫秒)，默认1秒
 
     double lightness = -1.0;   // for Light
     double targetTemperature = -1.0; // for AC
@@ -34,7 +35,8 @@ inline void to_json(json &j, const DeviceParam &p) {
     j = json{{"type", DeviceTypeToStr(p.type)},
              {"name", p.name},
              {"priorityLevel", p.priorityLevel},
-             {"powerConsumption", p.powerConsumption}};
+             {"powerConsumption", p.powerConsumption},
+             {"updateFrequency", p.updateFrequency}};
 
     if (p.lightness != -1.0)
         j["lightness"] = p.lightness;

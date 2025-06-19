@@ -1,4 +1,5 @@
 #include "airConditioner.h"
+#include "common.h"
 #include <iostream>
 
 double AirConditioner::getTargetTemperature() const {
@@ -24,6 +25,7 @@ json AirConditioner::toJson() const {
             {"name", name},
             {"priorityLevel", priorityLevel},
             {"powerConsumption", powerConsumption},
+            {"updateFrequency", updateFrequency},
             {"targetTemperature", targetTemperature},
             {"speed", speed}};
 }
@@ -40,18 +42,43 @@ Device *AirConditionerFactory::createDevice(const json &param) {
 
     // check specific parameters
     // TODO: 查看device.cpp和light.cpp以提供帮助
+    if (!param.contains("targetTemperature")) {
+        throw InvalidParameterException(
+            param, "Missing required field: targetTemperature");
+    }
+    if (!param.contains("speed")) {
+        throw InvalidParameterException(param, "Missing required field: speed");
+    }
+    if (!param["targetTemperature"].is_number()) {
+        throw InvalidParameterException(param,
+                                        "targetTemperature must be a number");
+    }
+    if (!param["speed"].is_number()) {
+        throw InvalidParameterException(param, "speed must be a number");
+    }
+    if (param["targetTemperature"] < MIN_AIR_CONDITIONER_TEMPERATURE ||
+        param["targetTemperature"] > MAX_AIR_CONDITIONER_TEMPERATURE) {
+        throw InvalidParameterException(
+            param, "targetTemperature must be between " +
+                       std::to_string(MIN_AIR_CONDITIONER_TEMPERATURE) +
+                       " and " +
+                       std::to_string(MAX_AIR_CONDITIONER_TEMPERATURE));
+    }
+    if (param["speed"] < 0 || param["speed"] > MAX_AIR_CONDITIONER_SPEED) {
+        throw InvalidParameterException(
+            param, "speed must be between " + std::to_string(0) + " and " +
+                       std::to_string(MAX_AIR_CONDITIONER_SPEED));
+    }
 
     std::string name = param["name"];
     int priorityLevel = param["priorityLevel"];
     double powerConsumption = param["powerConsumption"];
     double targetTemperature = param["targetTemperature"];
     double speed = param["speed"];
+    
+    // 获取updateFrequency，如果不存在则使用默认值
+    int updateFrequency = param.value("updateFrequency", 1000);
 
     return new AirConditioner(name, priorityLevel, powerConsumption,
-                              targetTemperature, speed);
-}
-
-Device *AirConditionerFactory::createDevice(DeviceParam &param) {
-    json j = param;
-    return createDevice(j);
+                              targetTemperature, speed, updateFrequency);
 }

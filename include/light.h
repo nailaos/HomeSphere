@@ -8,8 +8,8 @@ class Light : public Device {
 
   public:
     Light(std::string name, int priorityLevel, double powerConsumption,
-          double lightness)
-        : Device(name, priorityLevel, powerConsumption), lightness(lightness) {}
+          double lightness, int updateFrequency = 1000)
+        : Device(name, priorityLevel, powerConsumption, updateFrequency), lightness(lightness) {}
 
     double getLightness() const;
     void setLightness(double lightness);
@@ -24,7 +24,6 @@ class LightFactory : public DeviceFactory {
   public:
     Device *createDevice() override;
     Device *createDevice(const json &param) override;
-    Device *createDevice(DeviceParam &params) override;
 };
 
 class LightContainer : public DeviceContainer<Light> {
