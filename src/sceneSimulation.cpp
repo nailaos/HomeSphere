@@ -13,7 +13,7 @@ SceneSimulation::SceneSimulation(Room *room)
       fireHandled(false), gasLeakHandled(false), highTempHandled(false),
       gen(std::mt19937(
           std::chrono::system_clock::now().time_since_epoch().count())),
-      logIntervalMs(5000), simDurationMin(60), autoStop(true) {
+      logIntervalMs(5000), simDurationMin(2), autoStop(true) {
 
     temperature = 25.0;
     humidity = 60.0;
@@ -51,7 +51,7 @@ void SceneSimulation::loadEnvironmentConfig(const std::string &filename) {
     // 模拟配置
     if (envConfig.contains("simulation_config")) {
         auto &simConfig = envConfig["simulation_config"];
-        simDurationMin = simConfig.value("duration_minutes", 60);
+        simDurationMin = simConfig.value("duration_minutes", 2);
         autoStop = simConfig.value("auto_stop", true);
         logIntervalMs = simConfig.value("log_interval", 500);
     }
