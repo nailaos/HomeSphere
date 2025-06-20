@@ -23,7 +23,7 @@ int main() {
     LOG_INFO_SYS("智能家居系统启动");
 
     Room room;
-    room.init();
+    bool init = false;
 
     char choice;
     do {
@@ -32,27 +32,61 @@ int main() {
 
         switch (choice) {
         case '1':
+            if (init) {
+                room.changeUser();
+            } else {
+                room.init();
+                init = true;
+            }
             room.printCurrentUser();
             break;
         case '2':
+            if (!init) {
+                std::cout << "请先初始化房间设备容器" << std::endl;
+                break;
+            }
             room.addDevicesFromFile();
             break;
         case '3':
+            if (!init) {
+                std::cout << "请先初始化房间设备容器" << std::endl;
+                break;
+            }
             room.addDevices();
             break;
         case '4':
+            if (!init) {
+                std::cout << "请先初始化房间设备容器" << std::endl;
+                break;
+            }
             room.showDevices();
             break;
         case '5':
+            if (!init) {
+                std::cout << "请先初始化房间设备容器" << std::endl;
+                break;
+            }
             room.findDevice();
             break;
         case '6':
+            if (!init) {
+                std::cout << "请先初始化房间设备容器" << std::endl;
+                break;
+            }
             room.removeDevice();
             break;
         case '7':
+            if (!init) {
+                std::cout << "请先初始化房间设备容器" << std::endl;
+                break;
+            }
             room.saveDevices();
             break;
         case '8':
+            if (!init) {
+                std::cout << "请先初始化房间设备容器" << std::endl;
+                break;
+            }
             room.roomSimulation();
             break;
         case 'Q':

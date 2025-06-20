@@ -35,6 +35,8 @@ class AirConditionerContainer : public DeviceContainer<AirConditioner> {
   public:
     AirConditionerContainer(DeviceFactory *factory)
         : DeviceContainer<AirConditioner>(factory) {}
+
+    void changeDevice(int id) override;
 };
 
 inline void to_json(json &j, const AirConditioner &ac) { j = ac.toJson(); }

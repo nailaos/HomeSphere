@@ -33,7 +33,8 @@ class Room {
     void removeDevice();
     void saveDevices();
     void roomSimulation();
-    void changeDevice();
+    void changeDevice(int id);
+    void changeUser();
     
     // 添加getter方法以便SceneSimulation访问
     LightContainer* getLights() const { return lights; }

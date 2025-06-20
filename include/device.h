@@ -16,14 +16,16 @@ class Device {
     int updateFrequency; // 更新频率(毫秒)
 
   public:
-    Device(std::string name, int priorityLevel, double powerConsumption, int updateFrequency = 1000)
+    Device(std::string name, int priorityLevel, double powerConsumption,
+           int updateFrequency = 1000)
         : id(nextId++), name(name), priorityLevel(priorityLevel),
-          powerConsumption(powerConsumption), state(false), updateFrequency(updateFrequency) {};
+          powerConsumption(powerConsumption), state(false),
+          updateFrequency(updateFrequency) {};
 
     virtual ~Device() = default;
 
     int getId() const;
-    virtual std::string getName() const = 0;
+    std::string getName();
     int getPriorityLevel() const;
     double getPowerConsumption() const;
     bool getState() const;
@@ -71,7 +73,7 @@ template <typename T> class DeviceContainer {
     void addDevice(DeviceParam &params);
     bool findDevice(int id);
     bool removeDevice(int id);
-    Device* getDevice(int id);
+    Device *getDevice(int id);
     std::vector<T *> getDevices() const;
     virtual void changeDevice(int id) = 0;
 
@@ -80,6 +82,8 @@ template <typename T> class DeviceContainer {
     std::vector<DeviceParam> getDeviceParams() const;
 
     json toJson() const;
+
+    void sortDevices(int dimension);
 };
 
 // Constructor initializes the devices array and sets the size and capacity
@@ -132,7 +136,8 @@ template <typename T> void DeviceContainer<T>::addDevice(T *Device) {
 
 template <typename T> void DeviceContainer<T>::addDevice(json &params) {
     if (!params.is_array()) {
-        throw InvalidParameterException(params, "params must be an array in addDevice(json &params)");
+        throw InvalidParameterException(
+            params, "params must be an array in addDevice(json &params)");
     }
 
     for (const auto &item : params) {
@@ -204,11 +209,38 @@ void to_json(nlohmann::ordered_json &j, const DeviceContainer<T> &container) {
     j = container.toJson();
 }
 
-template <typename T>
-std::vector<T*> DeviceContainer<T>::getDevices() const {
-    std::vector<T*> result;
+template <typename T> std::vector<T *> DeviceContainer<T>::getDevices() const {
+    std::vector<T *> result;
     for (int i = 0; i < size; ++i) {
         result.push_back(devices[i]);
     }
     return result;
+}
+
+template <typename T> void DeviceContainer<T>::sortDevices(int dimension) {
+    if (size <= 1)
+        return;
+
+    auto comp = [dimension](T *a, T *b) {
+        switch (dimension) {
+        case 0: // 按 id 排序
+            return a->getId() < b->getId();
+        case 1: // importance（要求设备有该字段）
+            return a->getPriorityLevel() < b->getPriorityLevel();
+        case 2: // powerConsumption（要求设备有该字段）
+            return a->getPowerConsumption() < b->getPowerConsumption();
+        default:
+            std::cerr << "无效的排序维度，按设备 ID 默认排序\n";
+            return a->getId() < b->getId();
+        }
+    };
+
+    // 拷贝成 vector 方便排序
+    std::vector<T *> deviceVec(devices, devices + size);
+    std::sort(deviceVec.begin(), deviceVec.end(), comp);
+
+    // 排序完再拷贝回原始数组
+    for (int i = 0; i < size; ++i) {
+        devices[i] = deviceVec[i];
+    }
 }

@@ -59,8 +59,6 @@ Device *LightFactory::createDevice(const json &param) {
                      updateFrequency);
 }
 
-std::string Light::getName() const { return name; }
-
 void LightContainer::changeDevice(int id) {
     Light *light = dynamic_cast<Light *>(getDevice(id));
     if (light) {
@@ -70,7 +68,14 @@ void LightContainer::changeDevice(int id) {
         int priorityLevel;
         std::cin >> priorityLevel;
         light->setPriorityLevel(priorityLevel);
-        // TODO: 更改其他的属性
+        std::cout << "请输入新的亮度(0-100)：\n";
+        double lightness;
+        std::cin >> lightness;
+        light->setLightness(lightness);
+        std::cout << "请输入新的更新频率(ms)：\n";
+        int updateFrequency;
+        std::cin >> updateFrequency;
+        light->setUpdateFrequency(updateFrequency);
         std::cout << "更改后当前设备信息：\n";
         std::cout << light->toJson().dump(4) << std::endl;
     } else {

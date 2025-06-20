@@ -81,3 +81,36 @@ Device *SensorFactory::createDevice(const json &param) {
     return new Sensor(name, priorityLevel, powerConsumption, temperature,
                       humidity, co2);
 }
+
+void SensorContainer::changeDevice(int id) {
+    Sensor *sensor = dynamic_cast<Sensor *>(getDevice(id));
+    if (sensor) {
+        std::cout << "当前设备信息为：\n";
+        std::cout << sensor->toJson().dump(4) << std::endl;
+        std::cout << "请输入新的设备优先级：\n";
+        int priorityLevel;
+        std::cin >> priorityLevel;
+        sensor->setPriorityLevel(priorityLevel);
+        std::cout << "请输入新的温度：\n";
+        double temperature;
+        std::cin >> temperature;
+        sensor->setTemperature(temperature);
+        std::cout << "请输入新的湿度：\n";
+        double humidity;
+        std::cin >> humidity;
+        sensor->setHumidity(humidity);
+        std::cout << "请输入新的CO2浓度：\n";
+        double co2;
+        std::cin >> co2;
+        sensor->setCO2_Concentration(co2);
+        std::cout << "请输入新的更新频率(ms)：\n";
+        int updateFrequency;
+        std::cin >> updateFrequency;
+        sensor->setUpdateFrequency(updateFrequency);
+        std::cout << "更改后当前设备信息：\n";
+        std::cout << sensor->toJson().dump(4) << std::endl;
+    } else {
+        std::cerr << "Device with id " << id << " not found" << std::endl;
+    }
+}
+

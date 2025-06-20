@@ -43,6 +43,8 @@ class SensorContainer : public DeviceContainer<Sensor> {
   public:
     SensorContainer(DeviceFactory *factory)
         : DeviceContainer<Sensor>(factory) {}
+
+    void changeDevice(int id) override;
 };
 
 inline void to_json(json &j, const Sensor &s) { j = s.toJson(); }

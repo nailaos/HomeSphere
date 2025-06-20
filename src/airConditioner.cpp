@@ -82,3 +82,31 @@ Device *AirConditionerFactory::createDevice(const json &param) {
     return new AirConditioner(name, priorityLevel, powerConsumption,
                               targetTemperature, speed, updateFrequency);
 }
+
+void AirConditionerContainer::changeDevice(int id) {
+    AirConditioner *ac = dynamic_cast<AirConditioner *>(getDevice(id));
+    if (ac) {
+        std::cout << "当前设备信息为：\n";
+        std::cout << ac->toJson().dump(4) << std::endl;
+        std::cout << "请输入新的设备优先级：\n";
+        int priorityLevel;
+        std::cin >> priorityLevel;
+        ac->setPriorityLevel(priorityLevel);
+        std::cout << "请输入新的目标温度：\n";
+        double targetTemperature;
+        std::cin >> targetTemperature;
+        ac->setTargetTemperature(targetTemperature);
+        std::cout << "请输入新的速度：\n";
+        double speed;
+        std::cin >> speed;
+        ac->setSpeed(speed);
+        std::cout << "请输入新的更新频率(ms)：\n";
+        int updateFrequency;
+        std::cin >> updateFrequency;
+        ac->setUpdateFrequency(updateFrequency);
+        std::cout << "更改后当前设备信息：\n";
+        std::cout << ac->toJson().dump(4) << std::endl;
+    } else {
+        std::cerr << "Device with id " << id << " not found" << std::endl;
+    }
+}

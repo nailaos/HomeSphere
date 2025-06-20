@@ -20,6 +20,7 @@ class Admin : public User {
   public:
     void show() override;
     Admin(const std::string &name) : User(name) {}
+    bool canChangeDevice(Device *device) override;
 };
 
 class LightAdmin : public User {
@@ -33,19 +34,19 @@ class SensorAdmin : public User {
   public:
     void show() override;
     SensorAdmin(const std::string &name) : User(name) {}
-    void manageDevice(Device *device) override;
+    bool canChangeDevice(Device *device) override;
 };
 
 class AirConditionerAdmin : public User {
   public:
     void show() override;
     AirConditionerAdmin(const std::string &name) : User(name) {}
-    void manageDevice(Device *device) override;
+    bool canChangeDevice(Device *device) override;
 };
 
 class Visitor : public User {
   public:
     void show() override;
     Visitor(const std::string &name) : User(name) {}
-    void manageDevice(Device *device) override;
+    bool canChangeDevice(Device *device) override;
 };

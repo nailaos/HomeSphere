@@ -7,7 +7,7 @@
 
 void Room::init() {
     LOG_INFO_SYS("开始初始化房间设备容器");
-    
+
     DeviceFactory *light_factory = new LightFactory();
     DeviceFactory *air_conditioner_factory = new AirConditionerFactory();
     DeviceFactory *sensor_factory = new SensorFactory();
@@ -23,7 +23,7 @@ void Room::init() {
     visitor = new Visitor("Visitor");
 
     currentUser = admin;
-    
+
     LOG_INFO_SYS("房间设备容器初始化完成");
 }
 
@@ -51,15 +51,15 @@ void Room::addDevicesFromFile() {
         int sensorCount = j["Sensors"].size();
         int lightCount = j["Lights"].size();
         int acCount = j["AirConditioners"].size();
-        
+
         sensors->addDevice(j["Sensors"]);
         lights->addDevice(j["Lights"]);
         airConditioners->addDevice(j["AirConditioners"]);
-        
-        LOG_INFO_SYS("设备导入成功 - 传感器: " + std::to_string(sensorCount) + 
-                     ", 灯光: " + std::to_string(lightCount) + 
+
+        LOG_INFO_SYS("设备导入成功 - 传感器: " + std::to_string(sensorCount) +
+                     ", 灯光: " + std::to_string(lightCount) +
                      ", 空调: " + std::to_string(acCount));
-        
+
     } catch (const FactoryNotFoundException &e) {
         LOG_ALERT_SYS("工厂未找到异常: " + std::string(e.what()));
         std::cout << "工厂未找到异常: " << e.what() << std::endl;
@@ -84,9 +84,9 @@ void Room::addDevices() {
     int n;
     std::cout << "请输入设备数量: \n";
     std::cin >> n;
-    
+
     LOG_INFO_SYS("准备添加 " + std::to_string(n) + " 个设备");
-    
+
     try {
         for (int i = 0; i < n; i++) {
             DeviceParam device_param;
@@ -143,6 +143,18 @@ void Room::addDevices() {
 void Room::showDevices() {
     LOG_INFO_SYS("显示所有设备信息");
     std::cout << "Show devices\n";
+    std::cout << "是否需要对设备进行排序? (y/n)\n";
+    char c;
+    std::cin >> c;
+    if (c == 'y' || c == 'Y') {
+        std::cout << "请输入想要排序的维度(0(默认):设备ID, 1: 设备重要程度, 2: "
+                     "设备能耗)\n";
+        int dimension;
+        std::cin >> dimension;
+        sensors->sortDevices(dimension);
+        lights->sortDevices(dimension);
+        airConditioners->sortDevices(dimension);
+    }
     json j = {{"Sensors", *sensors},
               {"Lights", *lights},
               {"AirConditioners", *airConditioners}};
@@ -155,9 +167,9 @@ void Room::findDevice() {
     std::cout << "请输入设备ID: \n";
     int id;
     std::cin >> id;
-    
+
     LOG_INFO_SYS("查找设备ID: " + std::to_string(id));
-    
+
     bool found = sensors->findDevice(id) || lights->findDevice(id) ||
                  airConditioners->findDevice(id);
 
@@ -166,6 +178,12 @@ void Room::findDevice() {
         std::cout << "未找到设备" << std::endl;
     } else {
         LOG_INFO_SYS("找到设备ID: " + std::to_string(id));
+        std::cout << "是否想要修改该设备? (y/n)" << std::endl;
+        char c;
+        std::cin >> c;
+        if (c == 'y' || c == 'Y') {
+            changeDevice(id);
+        }
     }
 }
 
@@ -175,9 +193,9 @@ void Room::removeDevice() {
     std::cout << "请输入设备ID: \n";
     int id;
     std::cin >> id;
-    
+
     LOG_INFO_SYS("删除设备ID: " + std::to_string(id));
-    
+
     bool found = sensors->removeDevice(id) || lights->removeDevice(id) ||
                  airConditioners->removeDevice(id);
 
@@ -206,52 +224,50 @@ void Room::saveDevices() {
     std::ofstream ofs(json_path);
     ofs << j.dump(4);
     ofs.close();
-    
+
     LOG_INFO_SYS("设备信息保存成功");
 }
 
-void Room::roomSimulation() { 
+void Room::roomSimulation() {
     LOG_INFO_SYS("开始智能场景模拟");
     std::cout << "Scene simulation\n";
-    
+
     // 检查是否有设备
-    if (sensors->getSize() == 0 && lights->getSize() == 0 && airConditioners->getSize() == 0) {
+    if (sensors->getSize() == 0 && lights->getSize() == 0 &&
+        airConditioners->getSize() == 0) {
         LOG_ALERT_SYS("警告: 没有设备可以模拟");
         std::cout << "警告: 没有设备可以模拟。请先添加一些设备。" << std::endl;
         return;
     }
-    
+
     // 创建场景模拟对象
     std::cout << "正在创建智能场景模拟对象..." << std::endl;
     SceneSimulation *sceneSimulation = new SceneSimulation(this);
     std::cout << "智能场景模拟对象创建成功" << std::endl;
-    
+
     // 加载环境配置文件
     sceneSimulation->loadEnvironmentConfig("../data/environment.json");
-    
+
     std::cout << "开始智能场景模拟..." << std::endl;
     std::cout << "模拟将使用多线程控制不同类型的设备" << std::endl;
     std::cout << "环境参数将根据时间自动变化" << std::endl;
     std::cout << "自动化规则和紧急事件处理已启用" << std::endl;
     std::cout << "将自动触发预设的突发事件" << std::endl;
-    
+
     // 启动场景模拟
     sceneSimulation->start();
-    
+
     // 等待场景模拟结束
     LOG_INFO_SYS("场景模拟结束");
     std::cout << "场景模拟已结束，返回主菜单..." << std::endl;
 }
 
-void Room::changeDevice() {
+void Room::changeDevice(int id) {
     LOG_INFO_SYS("开始修改设备信息");
     std::cout << "Change device\n";
-    std::cout << "请输入设备ID: \n";
-    int id;
-    std::cin >> id;
-    
+
     LOG_INFO_SYS("修改设备ID: " + std::to_string(id));
-    
+
     bool found = sensors->findDevice(id) || lights->findDevice(id) ||
                  airConditioners->findDevice(id);
 
@@ -259,24 +275,72 @@ void Room::changeDevice() {
         LOG_INFO_SYS("未找到要修改的设备ID: " + std::to_string(id));
         std::cout << "未找到设备" << std::endl;
     } else {
-        Device* device = sensors->getDevice(id) || lights->getDevice(id) || airConditioners->getDevice(id);
+        Device *device = sensors->getDevice(id);
+        if (!device) {
+            device = lights->getDevice(id);
+        }
+        if (!device) {
+            device = airConditioners->getDevice(id);
+        }
         if (currentUser->canChangeDevice(device)) {
-            LOG_INFO_SYS("当前用户可以修改设备ID: " + std::to_string(id) +
-                         " 设备类型: " + DeviceTypeToString(device->getType()));
-            switch (device->getType()) {
-                case DeviceType::Sensor: {
-                    sensors->changeDevice(id);
-                    break;
-                }
-                default:
-                    break;
+            LOG_INFO_SYS(
+                "当前用户可以修改设备ID: " + std::to_string(id) +
+                " 设备类型: " + DeviceTypeToStr(device->getDeviceType()));
+            switch (device->getDeviceType()) {
+            case DeviceType::Sensor: {
+                sensors->changeDevice(id);
+                break;
+            }
+            case DeviceType::Light: {
+                lights->changeDevice(id);
+                break;
+            }
+            case DeviceType::AirConditioner: {
+                airConditioners->changeDevice(id);
+                break;
+            }
+            default:
+                break;
             }
         } else {
-            LOG_INFO_SYS("当前用户无权修改设备ID: " + std::to_string(id) +
-                         " 设备类型: " + DeviceTypeToString(device->getType()));
-            std::cout << "当前用户无权修改" << DeviceTypeToString(device->getType()) << "设备" << std::endl;
+            LOG_INFO_SYS(
+                "当前用户无权修改设备ID: " + std::to_string(id) +
+                " 设备类型: " + DeviceTypeToStr(device->getDeviceType()));
+            std::cout << "当前用户无权修改"
+                      << DeviceTypeToStr(device->getDeviceType()) << "设备"
+                      << std::endl;
         }
     }
+}
+
+void Room::changeUser() {
+    LOG_INFO_SYS("开始切换用户");
+    std::cout << "Change user\n";
+    std::cout << "请输入想切换的用户: (0: Admin, 1: LightAdmin, 2: SensorAdmin, 3: AirConditionerAdmin, 4: Visitor\n";
+    int user_id;
+    std::cin >> user_id;
+    switch (user_id) {
+    case 0:
+        currentUser = admin;
+        break;
+    case 1:
+        currentUser = lightAdmin;
+        break;
+    case 2:
+        currentUser = sensorAdmin;
+        break;
+    case 3:
+        currentUser = airConditionerAdmin;
+        break;
+    case 4:
+        currentUser = visitor;
+        break;
+    default:
+        break;
+    }
+    LOG_INFO_SYS("切换用户成功");
+    std::cout << "切换用户成功" << std::endl;
+    printCurrentUser();
 }
 
 void menu() {

@@ -8,6 +8,7 @@ int Device::nextId = 0;
 int Device::getId() const { return id; }
 
 // 删除 getName 的实现，改为纯虚函数由子类实现
+std::string Device::getName() { return name; }
 
 int Device::getPriorityLevel() const { return priorityLevel; }
 
