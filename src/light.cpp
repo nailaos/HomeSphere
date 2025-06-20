@@ -51,9 +51,29 @@ Device *LightFactory::createDevice(const json &param) {
     int priorityLevel = param["priorityLevel"];
     double powerConsumption = param["powerConsumption"];
     double lightness = param["lightness"];
-    
+
     // 获取updateFrequency，如果不存在则使用默认值
     int updateFrequency = param.value("updateFrequency", 1000);
 
-    return new Light(name, priorityLevel, powerConsumption, lightness, updateFrequency);
+    return new Light(name, priorityLevel, powerConsumption, lightness,
+                     updateFrequency);
+}
+
+std::string Light::getName() const { return name; }
+
+void LightContainer::changeDevice(int id) {
+    Light *light = dynamic_cast<Light *>(getDevice(id));
+    if (light) {
+        std::cout << "当前设备信息为：\n";
+        std::cout << light->toJson().dump(4) << std::endl;
+        std::cout << "请输入新的设备优先级：\n";
+        int priorityLevel;
+        std::cin >> priorityLevel;
+        light->setPriorityLevel(priorityLevel);
+        // TODO: 更改其他的属性
+        std::cout << "更改后当前设备信息：\n";
+        std::cout << light->toJson().dump(4) << std::endl;
+    } else {
+        std::cerr << "Device with id " << id << " not found" << std::endl;
+    }
 }

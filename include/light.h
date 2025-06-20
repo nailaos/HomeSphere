@@ -29,6 +29,8 @@ class LightFactory : public DeviceFactory {
 class LightContainer : public DeviceContainer<Light> {
   public:
     LightContainer(DeviceFactory *factory) : DeviceContainer<Light>(factory) {}
+
+    void changeDevice(int id) override;
 };
 
 inline void to_json(json &j, const Light &l) { j = l.toJson(); }

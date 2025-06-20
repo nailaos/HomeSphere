@@ -3,6 +3,7 @@
 #include "airConditioner.h"
 #include "light.h"
 #include "sensor.h"
+#include "user.h"
 #include <iostream>
 
 class Room {
@@ -10,6 +11,14 @@ class Room {
     LightContainer *lights;
     SensorContainer *sensors;
     AirConditionerContainer *airConditioners;
+
+    User *currentUser;
+
+    Admin* admin;
+    LightAdmin* lightAdmin;
+    SensorAdmin* sensorAdmin;
+    AirConditionerAdmin* airConditionerAdmin;
+    Visitor* visitor;
 
   public:
     Room() {};
@@ -24,6 +33,7 @@ class Room {
     void removeDevice();
     void saveDevices();
     void roomSimulation();
+    void changeDevice();
     
     // 添加getter方法以便SceneSimulation访问
     LightContainer* getLights() const { return lights; }

@@ -15,14 +15,21 @@ void Room::init() {
     lights = new LightContainer(light_factory);
     airConditioners = new AirConditionerContainer(air_conditioner_factory);
     sensors = new SensorContainer(sensor_factory);
+
+    admin = new Admin("Admin");
+    lightAdmin = new LightAdmin("LightAdmin");
+    sensorAdmin = new SensorAdmin("SensorAdmin");
+    airConditionerAdmin = new AirConditionerAdmin("AirConditionerAdmin");
+    visitor = new Visitor("Visitor");
+
+    currentUser = admin;
     
     LOG_INFO_SYS("房间设备容器初始化完成");
 }
 
 void Room::printCurrentUser() {
     LOG_INFO_SYS("打印当前用户信息");
-    std::cout << "Current user: \n";
-    std::cout << "Admin\n";
+    currentUser->show();
 }
 
 void Room::addDevicesFromFile() {
@@ -234,6 +241,42 @@ void Room::roomSimulation() {
     // 等待场景模拟结束
     LOG_INFO_SYS("场景模拟结束");
     std::cout << "场景模拟已结束，返回主菜单..." << std::endl;
+}
+
+void Room::changeDevice() {
+    LOG_INFO_SYS("开始修改设备信息");
+    std::cout << "Change device\n";
+    std::cout << "请输入设备ID: \n";
+    int id;
+    std::cin >> id;
+    
+    LOG_INFO_SYS("修改设备ID: " + std::to_string(id));
+    
+    bool found = sensors->findDevice(id) || lights->findDevice(id) ||
+                 airConditioners->findDevice(id);
+
+    if (!found) {
+        LOG_INFO_SYS("未找到要修改的设备ID: " + std::to_string(id));
+        std::cout << "未找到设备" << std::endl;
+    } else {
+        Device* device = sensors->getDevice(id) || lights->getDevice(id) || airConditioners->getDevice(id);
+        if (currentUser->canChangeDevice(device)) {
+            LOG_INFO_SYS("当前用户可以修改设备ID: " + std::to_string(id) +
+                         " 设备类型: " + DeviceTypeToString(device->getType()));
+            switch (device->getType()) {
+                case DeviceType::Sensor: {
+                    sensors->changeDevice(id);
+                    break;
+                }
+                default:
+                    break;
+            }
+        } else {
+            LOG_INFO_SYS("当前用户无权修改设备ID: " + std::to_string(id) +
+                         " 设备类型: " + DeviceTypeToString(device->getType()));
+            std::cout << "当前用户无权修改" << DeviceTypeToString(device->getType()) << "设备" << std::endl;
+        }
+    }
 }
 
 void menu() {

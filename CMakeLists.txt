@@ -20,6 +20,7 @@ set(SOURCES
     src/airConditioner.cpp
     src/sceneSimulation.cpp
     src/SmartLogger.cpp
+    src/user.cpp
 )
 
 # 创建可执行文件

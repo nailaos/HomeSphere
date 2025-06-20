@@ -23,7 +23,7 @@ class Device {
     virtual ~Device() = default;
 
     int getId() const;
-    std::string getName() const;
+    virtual std::string getName() const = 0;
     int getPriorityLevel() const;
     double getPowerConsumption() const;
     bool getState() const;
@@ -73,6 +73,7 @@ template <typename T> class DeviceContainer {
     bool removeDevice(int id);
     Device* getDevice(int id);
     std::vector<T *> getDevices() const;
+    virtual void changeDevice(int id) = 0;
 
     int getSize() const;
 
