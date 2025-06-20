@@ -8,6 +8,9 @@ double AirConditioner::getTargetTemperature() const {
 
 double AirConditioner::getSpeed() const { return speed; }
 
+std::string AirConditioner::getMode() const { return mode; }
+void AirConditioner::setMode(const std::string &m) { mode = m; }
+
 void AirConditioner::setTargetTemperature(double temperature) {
     targetTemperature = temperature;
 }
@@ -27,7 +30,8 @@ json AirConditioner::toJson() const {
             {"powerConsumption", powerConsumption},
             {"updateFrequency", updateFrequency},
             {"targetTemperature", targetTemperature},
-            {"speed", speed}};
+            {"speed", speed},
+            {"mode", mode}};
 }
 
 Device *AirConditionerFactory::createDevice() {

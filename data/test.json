@@ -1,0 +1,18 @@
+{
+    "target_temperature": 24.0,
+    "target_humidity": 55.0,
+    "events": [
+      {
+        "trigger_time": 960,
+        "delta_temperature": 5.0,
+        "delta_humidity": -10.0,
+        "delta_co2": 1000.0
+      },
+      {
+        "trigger_time": 1200,
+        "delta_temperature": -3.0,
+        "delta_humidity": 8.0,
+        "delta_co2": 500.0
+      }
+    ]
+  }

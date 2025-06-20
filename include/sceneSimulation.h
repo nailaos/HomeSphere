@@ -2,14 +2,11 @@
 
 #include "room.h"
 #include "json.hpp"
-#include <thread>
-#include <atomic>
-#include <mutex>
-#include <condition_variable>
 #include <vector>
 #include <string>
-#include <random>
-#include <chrono>
+#include <atomic>
+#include <thread>
+#include <mutex>
 
 using json = nlohmann::ordered_json;
 
@@ -27,76 +24,35 @@ public:
     void stop();
 
 private:
-    // 线程函数
-    void environmentThreadFunc();
-    void sensorThreadFunc();
-    void lightThreadFunc();
-    void airConditionerThreadFunc();
-    void automationThreadFunc();
-    void emergencyThreadFunc();
-    void loggingThreadFunc();
-
-    // 环境与事件处理
-    void updateEnvironment();
-    void triggerScheduledEvents();
-    void handleEmergencies();
-    void applyAutomationRules();
-    void applyEmergencyActions();
-    void logDeviceStates(const std::string& context);
-
-    // 工具
-    std::string getSimTimeStr();
-    std::string getRealTimeStr();
-
-    // 数据成员
     Room* room;
     std::atomic<bool> running;
-    std::atomic<bool> emergencyMode;
 
     // 环境参数
     double temperature;
     double humidity;
     double co2;
-    double lightIntensity;
-    int hour;
-    int minute;
-    int occupancy;
-    std::string scenario;
+    double targetTemperature;
+    double targetHumidity;
 
-    // 配置与事件
-    json envConfig;
-    std::vector<json> scheduledEvents;
+    // 事件
+    std::vector<json> events;
     std::vector<bool> eventTriggered;
-
-    // 紧急状态
-    bool fireDetected;
-    bool gasLeakDetected;
-    bool highTempDetected;
+    json envConfig;
 
     // 线程
     std::thread envThread;
-    std::thread sensorThread;
-    std::thread lightThread;
+    std::thread eventThread;
     std::thread acThread;
-    std::thread automationThread;
-    std::thread emergencyThread;
+    std::thread lightThread;
     std::thread logThread;
 
-    // 同步
-    std::mutex envMutex;
-    std::condition_variable cv;
+    // 线程函数
+    void environmentThreadFunc();
+    void eventThreadFunc();
+    void airConditionerThreadFunc();
+    void lightThreadFunc();
+    void loggingThreadFunc();
 
-    // 随机
-    std::mt19937 gen;
-    std::random_device rd;
-
-    // 日志
-    std::chrono::steady_clock::time_point lastLogTime;
-    int logIntervalMs;
-    int simDurationMin;
-    bool autoStop;
-
-    bool fireHandled;
-    bool gasLeakHandled;
-    bool highTempHandled;
+    // 时间推进
+    std::atomic<int> minuteOfDay;
 }; 

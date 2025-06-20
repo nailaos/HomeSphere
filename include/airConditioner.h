@@ -1,20 +1,24 @@
 #pragma once
 
 #include "device.h"
+#include <string>
 
 class AirConditioner : public Device {
   private:
     double targetTemperature;
     double speed;
+    std::string mode; // "off", "cool", "heat"
 
   public:
     AirConditioner(std::string name, int priorityLevel, double powerConsumption,
                    double temperature, double speed, int updateFrequency = 1000)
         : Device(name, priorityLevel, powerConsumption, updateFrequency),
-          targetTemperature(temperature), speed(speed) {};
+          targetTemperature(temperature), speed(speed), mode("off") {};
 
     double getTargetTemperature() const;
     double getSpeed() const;
+    std::string getMode() const;
+    void setMode(const std::string &mode);
 
     void setTargetTemperature(double temperature);
     void setSpeed(double speed);

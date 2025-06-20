@@ -246,11 +246,15 @@ void Room::roomSimulation() {
     std::cout << "智能场景模拟对象创建成功" << std::endl;
 
     // 加载环境配置文件
-    sceneSimulation->loadEnvironmentConfig("../data/environment.json");
+    std::cout << "请输入你要加载的配置文件名称(data文件夹里): \n";
+    std::string filename;
+    std::cin >> filename;
+    std::string json_path = "../data/" + filename + ".json";
+    LOG_INFO_SYS("尝试加载环境配置文件: " + json_path);
+    sceneSimulation->loadEnvironmentConfig(json_path);
 
     std::cout << "开始智能场景模拟..." << std::endl;
     std::cout << "模拟将使用多线程控制不同类型的设备" << std::endl;
-    std::cout << "环境参数将根据时间自动变化" << std::endl;
     std::cout << "自动化规则和紧急事件处理已启用" << std::endl;
     std::cout << "将自动触发预设的突发事件" << std::endl;
 
