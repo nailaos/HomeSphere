@@ -3,16 +3,32 @@
     "target_humidity": 55.0,
     "events": [
       {
-        "trigger_time": 960,
-        "delta_temperature": 5.0,
-        "delta_humidity": -10.0,
+        "name": "event1 温度降低",
+        "trigger_time": 310,
+        "delta_temperature": -5.0,
+        "delta_humidity": 0.0,
+        "delta_co2": 0.0
+      },
+      {
+        "name": "模拟火灾",
+        "trigger_time": 370,
+        "delta_temperature": 0.0,
+        "delta_humidity": 0.0,
         "delta_co2": 1000.0
       },
       {
-        "trigger_time": 1200,
-        "delta_temperature": -3.0,
+        "name": "event3 温度上升",
+        "trigger_time": 970,
+        "delta_temperature": 5.0,
+        "delta_humidity": 0.0,
+        "delta_co2": 0.0
+      },
+      {
+        "name": "event4 温度降低",
+        "trigger_time": 1210,
+        "delta_temperature": -6.0,
         "delta_humidity": 8.0,
-        "delta_co2": 500.0
+        "delta_co2": 0.0
       }
     ]
   }
